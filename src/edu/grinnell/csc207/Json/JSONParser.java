@@ -1,9 +1,8 @@
 package edu.grinnell.csc207.Json;
 
-import java.util.LinkedList;
 import java.util.ArrayList;
 
-public class JsonParser {
+public class JSONParser {
 
     /*
      * create a linked list of JSONObjects
@@ -11,10 +10,10 @@ public class JsonParser {
      * if { construct a JSON object first string is name value = parse what's
      * after colon add this to the linked list
      * 
-     * else if [ construct an array parse each value (seperated by commas)
+     * else if [ construct an array parse each value (sepArated by commas)
      * 
      * parse a value if { ^ value = construct a JSON object | if [ value =
-     * construct an array list parse each value (seperated by commas) if null
+     * construct an array list parse each value (separated by commas) if null
      * value = null else if true value = true else if false value = false else
      * is a number value = that number (beware of symbols in it, like ^ return
      * value;
@@ -27,12 +26,18 @@ public class JsonParser {
 
     // ADAM NOTE: We're not passing { or [ or ] or } into these procedures for
     // parsing
-    public ArrayList array(String s) {
+    ArrayList parseArray(String s) {
+	return parseBrackets(s, false);
+    }
+
+    JSONObject parseObject(String s) {
+	return new JSONObject(parseBrackets(s, true));
+    }
+
+    ArrayList parseBrackets(String s, boolean object) {
 	ArrayList list = new ArrayList();
 	int countsIfInside = 0;
 	char[] chars = s.toCharArray();
-	// only when startofString is zero will we be outside of any topmost
-	// level bracket
 	int startOfString = 0;
 	for (int i = 0; i < chars.length; i++) {
 	    if (i == '{' || i == '[') {
@@ -42,45 +47,34 @@ public class JsonParser {
 	    }
 	    if ((chars[i] == ',' && countsIfInside == 0)
 		    || i == chars.length - 1) {
-		list.add(parse(s.substring(startOfString, i)));
+		if (object) {
+		    list.add(parsePair(s.substring(startOfString, i)));
+		} else {
+		    list.add(parse(s.substring(startOfString, i)));
+		}
 		startOfString = i + 1;
 	    }
 	}
-
 	return list;
-
     }
 
-    public JsonPair pair(String s) {
+    JSONPair parsePair(String s) {
 	int colonIndex = s.indexOf(':');
 	String name = s.substring(0, colonIndex);
 	String value = s.substring(colonIndex + 1);
-	return new JsonPair(name, parse(value));
+	return new JSONPair(name, parse(value));
     }
 
-    public JsonObject object(String s) {
-	ArrayList list = new ArrayList();
+    //Numbers, String, Booleans, null
+    public Object parse(String s) {
 	int countsIfInside = 0;
 	char[] chars = s.toCharArray();
 	int startOfString = 0;
 	for (int i = 0; i < chars.length; i++) {
-	    if (i == '{' || i == '[') {
-		countsIfInside++;
-	    } else if (i == '}' || i == ']') {
-		countsIfInside--;
-	    }
-	    if ((chars[i] == ',' && countsIfInside == 0)
-		    || i == chars.length - 1) {
-		list.add(pair(s.substring(startOfString, i)));
-		startOfString = i + 1;
+	    if(/*TYPES!*/ false){
+		
 	    }
 	}
-
-	return new JsonObject(list);
-    }
-
-    public ArrayList<JsonPair> parse(String s) {
 	return null;
-
     }
 }
