@@ -24,8 +24,6 @@ public class JSONParser {
      * we'll also need to deal with whitespace - I suggest a for loop
      */
 
-    // ADAM NOTE: We're not passing { or [ or ] or } into these procedures for
-    // parsing
     ArrayList parseArray(String s) {
 	return parseBrackets(s, false);
     }
@@ -64,7 +62,6 @@ public class JSONParser {
 	return new JSONPair(name, parse(value));
     }
 
-    // Numbers, String, Booleans, null
     public Object parse(String s) {
 	int layer = 0;
 	char[] chars = s.toCharArray();
