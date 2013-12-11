@@ -36,17 +36,16 @@ public class JSONParser {
 
     ArrayList parseBrackets(String s, boolean object) {
 	ArrayList list = new ArrayList();
-	int countsIfInside = 0;
+	int layer = 0;
 	char[] chars = s.toCharArray();
 	int startOfString = 0;
 	for (int i = 0; i < chars.length; i++) {
-	    if (i == '{' || i == '[') {
-		countsIfInside++;
-	    } else if (i == '}' || i == ']') {
-		countsIfInside--;
+	    if (chars[i] == '{' || chars[i] == '[') {
+		layer++;
+	    } else if (chars[i] == '}' || chars[i] == ']') {
+		layer--;
 	    }
-	    if ((chars[i] == ',' && countsIfInside == 0)
-		    || i == chars.length - 1) {
+	    if ((chars[i] == ',' && layer == 0) || i == chars.length - 1) {
 		if (object) {
 		    list.add(parsePair(s.substring(startOfString, i)));
 		} else {
@@ -65,16 +64,98 @@ public class JSONParser {
 	return new JSONPair(name, parse(value));
     }
 
-    //Numbers, String, Booleans, null
+    // Numbers, String, Booleans, null
     public Object parse(String s) {
-	int countsIfInside = 0;
+	int layer = 0;
 	char[] chars = s.toCharArray();
 	int startOfString = 0;
 	for (int i = 0; i < chars.length; i++) {
-	    if(/*TYPES!*/ false){
-		
+	    if (Character.isWhitespace(chars[i])) {
+		// Skip over
+	    } else if (chars[i] == '{') {
+		return parseObject(s.substring(i, findOnLayer(chars, '}', i)));
+	    } else if (chars[i] == '[') {
+		return parseArray(s.substring(i, findOnLayer(chars, ']', i)));
+	    } else if (chars[i] == '"') {
+		return parseString(s.substring(i, findNext(chars, '"', i)));
+	    } else if (chars[i] == '-' || Character.isDigit(chars[i])) {
+		int end = i;
+		while (chars[end] == '-' || chars[end] == '+'
+			|| chars[end] == 'e' || chars[end] == 'E'
+			|| chars[end] == '.' || Character.isDigit(chars[end])) {
+		    end++;
+		}
+		return parseNums(s.substring(i, end));
+	    } else if (chars[i] == 't') {
+		if (s.substring(i, i + 4).equals("true")) {
+		    i += 4;
+		    return true;
+		} else {
+		    throw new IllegalArgumentException(
+			    "Invalid input at character " + i);
+		}
+	    } else if (chars[i] == 'f') {
+		if (s.substring(i, i + 5).equals("false")) {
+		    i += 5;
+		    return false;
+		} else {
+		    throw new IllegalArgumentException(
+			    "Invalid input at character " + i);
+		}
+	    } else if (chars[i] == 'n') {
+		if (s.substring(i, i + 4).equals("null")) {
+		    i += 4;
+		    return null;
+		} else {
+		    throw new IllegalArgumentException(
+			    "Invalid input at character " + i);
+		}
+	    } else {
+		throw new IllegalArgumentException(
+			"Invalid input at character " + i);
 	    }
 	}
 	return null;
+    }
+
+    private Object parseNums(String substring) {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
+    private Object parseString(String substring) {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
+    int findOnLayer(char[] chars, char c, int i) {
+	int layer = 0;
+	boolean inQuotes = false;
+
+	for (; i < chars.length; i++) {
+	    if (chars[i] == '"') {
+		inQuotes = !inQuotes;
+	    }
+	    if (!inQuotes) {
+		if (chars[i] == '{' || chars[i] == '[') {
+		    layer++;
+		} else if (i == '}' || i == ']') {
+		    layer--;
+		}
+		if ((chars[i] == c && layer == 0)) {
+		    return i;
+		}
+	    }
+	}
+	return -1;
+    }
+
+    int findNext(char[] chars, char c, int i) {
+	for (; i < chars.length; i++) {
+	    if (chars[i] == c) {
+		return i;
+	    }
+	}
+	return -1;
     }
 }
